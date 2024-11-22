@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário - Sistema de Estoque</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .alert {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bem-vindo ao serviço Inventory</h1>
+
+    <div id="actionButtons">
+        <button onclick="showAddItemForm()">Adicionar item</button>
+        <button onclick="viewStock()">Visualizar estoque</button>
+        <button onclick="updatePrice()">Atualizar preço</button>
+        <button onclick="updateAvailability()">Atualizar disponibilidade</button>
+        <button onclick="endService()">Encerrar serviço</button>
+    </div>
+
+    <div id="formContainer"></div>
+    <div id="stockTable"></div>
+    <div id="message" class="alert"></div>
+</div>
+
+<script>
+    let inventory = {
+        names: [],
+        quantities: [],
+        prices: []
+    };
+
+    function showAddItemForm() {
+        document.getElementById("formContainer").innerHTML = `
+            <h2>Adicionar item ao estoque</h2>
+            <div class="form-group">
+                <label for="itemName">Nome do item:</label>
+                <input type="text" id="itemName" required>
+            </div>
+            <div class="form-group">
+                <label for="itemQuantity">Quantidade:</label>
+                <input type="number" id="itemQuantity" required>
+            </div>
+            <div class="form-group">
+                <label for="itemPrice">Preço:</label>
+                <input type="number" id="itemPrice" required>
+            </div>
+            <button onclick="addItem()">Adicionar</button>
+        `;
+    }
+
+    function addItem() {
+        const name = document.getElementById("itemName").value;
+        const quantity = parseInt(document.getElementById("itemQuantity").value);
+        const price = parseFloat(document.getElementById("itemPrice").value);
+
+        if (name && quantity > 0 && price > 0) {
+            inventory.names.push(name);
+            inventory.quantities.push(quantity);
+            inventory.prices.push(price);
+            showMessage(`Adicionado ${quantity} unidades de "${name}" ao estoque com preço de R$ ${price.toFixed(2)} cada.`);
+            clearForm();
+        } else {
+            showMessage("Por favor, preencha todos os campos corretamente.");
+        }
+    }
+
+    function viewStock() {
+        let tableContent = `
+            <h2>Estoque</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                        <th>Preço</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        for (let i = 0; i < inventory.names.length; i++) {
+            tableContent += `
+                <tr>
+                    <td>${inventory.names[i]}</td>
+                    <td>${inventory.quantities[i]}</td>
+                    <td>R$ ${inventory.prices[i].toFixed(2)}</td>
+                </tr>
+            `;
+        }
+        tableContent += `</tbody></table>`;
+        document.getElementById("stockTable").innerHTML = tableContent;
+    }
+
+    function updatePrice() {
+        let priceUpdateForm = `
+            <h2>Atualizar preço</h2>
+            <label for="itemSelect">Escolha um item para atualizar o preço:</label>
+            <select id="itemSelect">
+                <option value="">Selecione...</option>
+        `;
+        inventory.names.forEach((name, index) => {
+            priceUpdateForm += `<option value="${index}">${name}</option>`;
+        });
+        priceUpdateForm += `</select>
+            <div class="form-group">
+                <label for="newPrice">Novo preço:</label>
+                <input type="number" id="newPrice" required>
+            </div>
+            <button onclick="applyPriceUpdate()">Atualizar Preço</button>
+        `;
+        document.getElementById("formContainer").innerHTML = priceUpdateForm;
+    }
+
+    function applyPriceUpdate() {
+        const itemIndex = parseInt(document.getElementById("itemSelect").value);
+        const newPrice = parseFloat(document.getElementById("newPrice").value);
+
+        if (itemIndex >= 0 && newPrice > 0) {
+            inventory.prices[itemIndex] = newPrice;
+            showMessage(`Preço de "${inventory.names[itemIndex]}" atualizado para R$ ${newPrice.toFixed(2)}`);
+            clearForm();
+        } else {
+            showMessage("Por favor, selecione um item válido e insira um preço válido.");
+        }
+    }
+
+    function updateAvailability() {
+        let availabilityForm = `
+            <h2>Atualizar disponibilidade</h2>
+            <label for="itemSelect">Escolha um item para atualizar a quantidade:</label>
+            <select id="itemSelectAvailability">
+                <option value="">Selecione...</option>
+        `;
+        inventory.names.forEach((name, index) => {
+            availabilityForm += `<option value="${index}">${name}</option>`;
+        });
+        availabilityForm += `</select>
+            <div class="form-group">
+                <label for="newQuantity">Nova quantidade:</label>
+                <input type="number" id="newQuantity" required>
+            </div>
+            <button onclick="applyAvailabilityUpdate()">Atualizar Quantidade</button>
+        `;
+        document.getElementById("formContainer").innerHTML = availabilityForm;
+    }
+
+    function applyAvailabilityUpdate() {
+        const itemIndex = parseInt(document.getElementById("itemSelectAvailability").value);
+        const newQuantity = parseInt(document.getElementById("newQuantity").value));
+
+        if (itemIndex >= 0 && newQuantity >= 0) {
+            inventory.quantities[itemIndex] = newQuantity;
+            showMessage(`Quantidade de "${inventory.names[itemIndex]}" atualizada para ${newQuantity} unidades.`);
+            clearForm();
+        } else {
+            showMessage("Por favor, selecione um item válido e insira uma quantidade válida.");
+        }
+    }
+
+    function endService() {
+        let csvContent = "Nome;Quantidade;Preço\n";
+        for (let i = 0; i < inventory.names.length; i++) {
+            csvContent += `${inventory.names[i]};${inventory.quantities[i]};${inventory.prices[i].toFixed(2)}\n`;
+        }
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "estoque.csv";
+        link.click();
+        showMessage("Serviço encerrado e arquivo de estoque gerado.");
+        document.getElementById("actionButtons").style.display = "none";
+    }
+
+    function showMessage(message) {
+        document.getElementById("message").innerText = message;
+    }
+
+    function clearForm() {
+        document.getElementById("formContainer").innerHTML = "";
+    }
+</script>
+
+</body>
+</html>
