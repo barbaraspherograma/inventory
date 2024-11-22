@@ -186,7 +186,7 @@
     function updateAvailability() {
         let availabilityForm = `
             <h2>Atualizar disponibilidade</h2>
-            <label for="itemSelect">Escolha um item para atualizar a quantidade:</label>
+            <label for="itemSelectAvailability">Escolha um item para atualizar a quantidade:</label>
             <select id="itemSelectAvailability">
                 <option value="">Selecione...</option>
         `;
@@ -205,7 +205,7 @@
 
     function applyAvailabilityUpdate() {
         const itemIndex = parseInt(document.getElementById("itemSelectAvailability").value);
-        const newQuantity = parseInt(document.getElementById("newQuantity").value));
+        const newQuantity = parseInt(document.getElementById("newQuantity").value);
 
         if (itemIndex >= 0 && newQuantity >= 0) {
             inventory.quantities[itemIndex] = newQuantity;
@@ -224,20 +224,4 @@
         const blob = new Blob([csvContent], { type: "text/csv" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "estoque.csv";
-        link.click();
-        showMessage("Serviço encerrado e arquivo de estoque gerado.");
-        document.getElementById("actionButtons").style.display = "none";
-    }
-
-    function showMessage(message) {
-        document.getElementById("message").innerText = message;
-    }
-
-    function clearForm() {
-        document.getElementById("formContainer").innerHTML = "";
-    }
-</script>
-
-</body>
-</html>
+       
